@@ -21,6 +21,7 @@
   height: 48px !important;
   padding-left: 48px !important;
   background-color: var(--surface-input) !important;
+  color: var(--text-primary) !important;
   border: 1.5px solid var(--border-default) !important;
   font-size: 15px !important;
   border-radius: var(--radius-md) !important;

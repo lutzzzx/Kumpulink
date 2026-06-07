@@ -25,7 +25,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 250ms var(--transition-md) forwards;
+  animation: slideUp var(--transition-md) forwards;
 }
 
 .header {

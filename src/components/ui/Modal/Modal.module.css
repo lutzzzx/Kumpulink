@@ -26,7 +26,7 @@
   overflow-y: auto;
   opacity: 0;
   transform: translateY(16px);
-  animation: slideUp 250ms var(--transition-md) forwards;
+  animation: slideUp var(--transition-md) forwards;
 }
 
 /* Glass prop deprecated visually, maps back to standard opaque modal */
