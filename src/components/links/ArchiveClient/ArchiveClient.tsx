@@ -12,6 +12,7 @@ import { useMobileUI } from '@/context/MobileUIContext'
 import { FilterSheet } from '@/components/mobile/FilterSheet'
 import { TagManager } from '@/components/tags/TagManager'
 import { WebviewModal } from '@/components/links/WebviewModal'
+import { EditLinkModal } from '@/components/links/EditLinkModal'
 import styles from './ArchiveClient.module.css'
 
 export interface ArchiveClientProps {
@@ -27,6 +28,7 @@ export function ArchiveClient({
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null)
   
   // Modals state
+  const [editingLink, setEditingLink] = useState<LinkItem | null>(null)
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null)
   const [previewLink, setPreviewLink] = useState<LinkItem | null>(null)
   const { filterSheetOpen, setFilterSheetOpen, tagManagerOpen, setTagManagerOpen } = useMobileUI()
@@ -274,7 +276,7 @@ export function ArchiveClient({
                     <LinkCard
                       key={link.id}
                       link={link}
-                      onEdit={() => {}} // Disabled editing in Archive view
+                      onEdit={setEditingLink}
                       onDelete={setDeletingLinkId}
                       onUnarchive={handleUnarchiveLink}
                       isSelectable={isBulkMode}
@@ -304,6 +306,14 @@ export function ArchiveClient({
       )}
 
       {/* Modals */}
+      {editingLink && (
+        <EditLinkModal
+          isOpen={editingLink !== null}
+          onClose={() => setEditingLink(null)}
+          link={editingLink}
+        />
+      )}
+
       <Modal
         isOpen={deletingLinkId !== null}
         onClose={() => setDeletingLinkId(null)}

@@ -32,6 +32,7 @@ export default async function ArchivePage(): Promise<React.JSX.Element> {
         description: true,
         faviconUrl: true,
         isDead: true,
+        isArchived: true,
         lastChecked: true,
         httpStatus: true,
         domain: {
@@ -77,6 +78,7 @@ export default async function ArchivePage(): Promise<React.JSX.Element> {
     description: link.description,
     faviconUrl: link.faviconUrl,
     isDead: link.isDead,
+    isArchived: link.isArchived,
     lastChecked: link.lastChecked ? link.lastChecked.toISOString() : null,
     httpStatus: link.httpStatus,
     domain: {
