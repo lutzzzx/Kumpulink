@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createLinkAction } from '@/actions/link.actions'
+import { getUserTagsAction } from '@/actions/tag.actions'
+import { TagPicker, type TagItem } from '@/components/tags/TagPicker'
 import styles from './AddLinkModal.module.css'
 
 export interface AddLinkModalProps {
@@ -16,8 +18,20 @@ export function AddLinkModal({ isOpen, onClose }: AddLinkModalProps): React.JSX.
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [availableTags, setAvailableTags] = useState<TagItem[]>([])
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      getUserTagsAction().then((res) => {
+        if (res.success && res.data) {
+          setAvailableTags(res.data)
+        }
+      })
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,12 +49,14 @@ export function AddLinkModal({ isOpen, onClose }: AddLinkModalProps): React.JSX.
         url,
         title: title || undefined,
         description: description || undefined,
+        tagIds: selectedTagIds,
       })
 
       if (res.success) {
         setUrl('')
         setTitle('')
         setDescription('')
+        setSelectedTagIds([])
         onClose()
       } else {
         setError(res.error || 'Failed to save link.')
@@ -53,7 +69,7 @@ export function AddLinkModal({ isOpen, onClose }: AddLinkModalProps): React.JSX.
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Link" glass>
+    <Modal isOpen={isOpen} onClose={onClose} title="Add New Link">
       <form onSubmit={handleSubmit} className={styles.form}>
         {error && <div className={styles.errorAlert}>{error}</div>}
 
@@ -85,6 +101,12 @@ export function AddLinkModal({ isOpen, onClose }: AddLinkModalProps): React.JSX.
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={loading}
+        />
+
+        <TagPicker
+          allTags={availableTags}
+          selectedTagIds={selectedTagIds}
+          onChange={setSelectedTagIds}
         />
 
         <Button

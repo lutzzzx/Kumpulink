@@ -2,6 +2,8 @@ import React from 'react'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { BottomNav } from '@/components/mobile/BottomNav'
+import { MobileUIProvider } from '@/context/MobileUIContext'
 import styles from './layout.module.css'
 
 interface DashboardLayoutProps {
@@ -20,11 +22,14 @@ export default async function DashboardLayout({
   const userName = session.user.name || session.user.email || 'User'
 
   return (
-    <div className={styles.layoutWrapper}>
-      <DashboardHeader userName={userName} />
-      <div className={styles.contentWrapper}>
-        {children}
+    <MobileUIProvider>
+      <div className={styles.layoutWrapper}>
+        <DashboardHeader userName={userName} />
+        <div className={styles.contentWrapper}>
+          {children}
+        </div>
+        <BottomNav />
       </div>
-    </div>
+    </MobileUIProvider>
   )
 }

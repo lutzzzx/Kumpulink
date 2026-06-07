@@ -46,4 +46,34 @@
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.15);
   --shadow-color: 0 8px 24px rgba(225, 29, 72, 0.25);
   --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+  /* Redesign Layout & Animation Tokens */
+  --surface-sidebar: #FAFAFA;
+  --surface-input: #F9FAFB;
+  --color-primary-light: rgba(225, 29, 72, 0.08);
+  --color-primary-subtle: #FFF1F2;
+  --transition-base: 150ms ease;
+  --transition-md: 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+[data-theme="dark"] {
+  --surface-base: #0F172A;
+  --surface-raised: #1E293B;
+  --surface-glass: rgba(30, 41, 59, 0.7);
+  --surface-background: #0B0F19;
+  --surface-sidebar: #0F172A;
+  --surface-input: #1E293B;
+
+  --border-default: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  --color-primary-light: rgba(225, 29, 72, 0.15);
+  --color-primary-subtle: #1E1B20;
+}
+

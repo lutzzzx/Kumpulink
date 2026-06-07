@@ -21,10 +21,13 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
   return (
     <div className={styles.container}>
       <div className={styles.circle1} />
-      <div className={styles.circle2} />
 
       <nav className={styles.nav}>
-        <span className={styles.logo}>Kumpulink</span>
+        <div className={styles.logoContainer}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Kumpulink Logo" className={styles.logoImg} />
+          <span className={styles.logo}>Kumpulink</span>
+        </div>
         <div className={styles.navLinks}>
           <Link href="/login" passHref className={styles.linkWrapper}>
             <Button variant="ghost" size="sm">Sign In</Button>
@@ -54,7 +57,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
         </div>
 
         <div className={styles.featuresGrid}>
-          <Card variant="glass" className={styles.featureCard}>
+          <Card variant="raised" className={styles.featureCard}>
             <h3 className={styles.featureTitle}>
               <span className={styles.featureIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -68,7 +71,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             </p>
           </Card>
 
-          <Card variant="glass" className={styles.featureCard}>
+          <Card variant="raised" className={styles.featureCard}>
             <h3 className={styles.featureTitle}>
               <span className={styles.featureIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -82,7 +85,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
             </p>
           </Card>
 
-          <Card variant="glass" className={styles.featureCard}>
+          <Card variant="raised" className={styles.featureCard}>
             <h3 className={styles.featureTitle}>
               <span className={styles.featureIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

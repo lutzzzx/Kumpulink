@@ -4,6 +4,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   AUTH_SECRET: z.string().min(32),
   NEXT_PUBLIC_APP_URL: z.string().url(),
+  DIRECT_URL: z.string().url().optional(),
+  CRON_SECRET: z.string().optional(),
 })
 
 // In Next.js, on the client side, process.env is empty except for NEXT_PUBLIC_ variables.

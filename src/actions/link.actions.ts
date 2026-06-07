@@ -3,6 +3,7 @@
 import { auth } from '@/auth'
 import { db } from '@/lib/db'
 import { CreateLinkSchema, UpdateLinkSchema } from '@/schemas/link.schema'
+import { BulkDeleteSchema, BulkArchiveSchema, BulkTagSchema } from '@/schemas/tag.schema'
 import { extractDomain, scrapeTitle } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 
@@ -24,7 +25,7 @@ export async function createLinkAction(input: unknown): Promise<LinkActionRespon
     return { success: false, error: errorMsg }
   }
 
-  const { url, title: inputTitle, description } = parsed.data
+  const { url, title: inputTitle, description, tagIds } = parsed.data
   const domainName = extractDomain(url)
 
   if (!domainName) {
@@ -32,6 +33,19 @@ export async function createLinkAction(input: unknown): Promise<LinkActionRespon
   }
 
   try {
+    // Verify tags ownership
+    if (tagIds && tagIds.length > 0) {
+      const tagsCount = await db.tag.count({
+        where: {
+          id: { in: tagIds },
+          userId: session.user.id,
+        },
+      })
+      if (tagsCount !== tagIds.length) {
+        return { success: false, error: 'Invalid tags provided.' }
+      }
+    }
+
     // 1. Scrape title if not provided
     const finalTitle = inputTitle || (await scrapeTitle(url))
 
@@ -74,9 +88,17 @@ export async function createLinkAction(input: unknown): Promise<LinkActionRespon
           title: finalTitle,
           description: description || null,
           faviconUrl,
+          tags: {
+            create: tagIds?.map(tagId => ({ tagId })) || [],
+          },
         },
         include: {
           domain: true,
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
         },
       })
 
@@ -103,7 +125,7 @@ export async function updateLinkAction(input: unknown): Promise<LinkActionRespon
     return { success: false, error: errorMsg }
   }
 
-  const { id: linkId, title, description } = parsed.data
+  const { id: linkId, title, description, tagIds } = parsed.data
 
   try {
     // 1. Verify ownership pattern
@@ -120,16 +142,51 @@ export async function updateLinkAction(input: unknown): Promise<LinkActionRespon
       return { success: false, error: 'Forbidden.' }
     }
 
-    // 2. Perform edit mutation
-    const updated = await db.link.update({
-      where: { id: linkId },
-      data: {
-        title,
-        description: description || null,
-      },
+    // Verify tags ownership
+    if (tagIds && tagIds.length > 0) {
+      const tagsCount = await db.tag.count({
+        where: {
+          id: { in: tagIds },
+          userId: session.user.id,
+        },
+      })
+      if (tagsCount !== tagIds.length) {
+        return { success: false, error: 'Invalid tags provided.' }
+      }
+    }
+
+    // 2. Perform edit mutation inside a transaction
+    const updated = await db.$transaction(async (tx) => {
+      const updatedLink = await tx.link.update({
+        where: { id: linkId },
+        data: {
+          title,
+          description: description || null,
+        },
+      })
+
+      if (tagIds !== undefined) {
+        // Delete existing relations
+        await tx.linkTag.deleteMany({
+          where: { linkId },
+        })
+
+        // Create new relations
+        if (tagIds.length > 0) {
+          await tx.linkTag.createMany({
+            data: tagIds.map((tagId) => ({
+              linkId,
+              tagId,
+            })),
+          })
+        }
+      }
+
+      return updatedLink
     })
 
     revalidatePath('/dashboard')
+    revalidatePath('/archive')
     return { success: true, data: updated }
   } catch (error) {
     console.error('Update link error:', error)
@@ -181,9 +238,290 @@ export async function deleteLinkAction(linkId: string): Promise<LinkActionRespon
     })
 
     revalidatePath('/dashboard')
+    revalidatePath('/archive')
     return { success: true }
   } catch (error) {
     console.error('Delete link error:', error)
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function archiveLinkAction(linkId: string): Promise<LinkActionResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+
+  try {
+    const link = await db.link.findUnique({
+      where: { id: linkId },
+      select: { userId: true },
+    })
+
+    if (!link) {
+      return { success: false, error: 'Link not found.' }
+    }
+
+    if (link.userId !== session.user.id) {
+      return { success: false, error: 'Forbidden.' }
+    }
+
+    await db.link.update({
+      where: { id: linkId },
+      data: { isArchived: true },
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/archive')
+    return { success: true }
+  } catch (error) {
+    console.error('Archive link error:', error)
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function unarchiveLinkAction(linkId: string): Promise<LinkActionResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+
+  try {
+    const link = await db.link.findUnique({
+      where: { id: linkId },
+      select: { userId: true },
+    })
+
+    if (!link) {
+      return { success: false, error: 'Link not found.' }
+    }
+
+    if (link.userId !== session.user.id) {
+      return { success: false, error: 'Forbidden.' }
+    }
+
+    await db.link.update({
+      where: { id: linkId },
+      data: { isArchived: false },
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/archive')
+    return { success: true }
+  } catch (error) {
+    console.error('Unarchive link error:', error)
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function bulkDeleteAction(input: unknown): Promise<LinkActionResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+
+  const parsed = BulkDeleteSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues.map(e => e.message).join(', ') }
+  }
+
+  const { linkIds } = parsed.data
+
+  try {
+    const links = await db.link.findMany({
+      where: {
+        id: { in: linkIds },
+        userId: session.user.id,
+      },
+      select: { id: true, domainId: true },
+    })
+
+    if (links.length !== linkIds.length) {
+      return { success: false, error: 'Some links were not found or access is forbidden.' }
+    }
+
+    const domainIds = Array.from(new Set(links.map(l => l.domainId)))
+
+    await db.$transaction(async (tx) => {
+      await tx.link.deleteMany({
+        where: {
+          id: { in: linkIds },
+        },
+      })
+
+      for (const domainId of domainIds) {
+        const remainingCount = await tx.link.count({
+          where: {
+            domainId,
+            userId: session.user!.id!,
+          },
+        })
+
+        if (remainingCount === 0) {
+          await tx.domain.delete({
+            where: { id: domainId },
+          })
+        }
+      }
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/archive')
+    return { success: true }
+  } catch (error) {
+    console.error('Bulk delete error:', error)
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function bulkArchiveAction(input: unknown): Promise<LinkActionResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+
+  const parsed = BulkArchiveSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues.map(e => e.message).join(', ') }
+  }
+
+  const { linkIds } = parsed.data
+
+  try {
+    const linksCount = await db.link.count({
+      where: {
+        id: { in: linkIds },
+        userId: session.user.id,
+      },
+    })
+
+    if (linksCount !== linkIds.length) {
+      return { success: false, error: 'Some links were not found or access is forbidden.' }
+    }
+
+    await db.link.updateMany({
+      where: {
+        id: { in: linkIds },
+      },
+      data: {
+        isArchived: true,
+      },
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/archive')
+    return { success: true }
+  } catch (error) {
+    console.error('Bulk archive error:', error)
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function bulkUnarchiveAction(input: unknown): Promise<LinkActionResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+
+  const parsed = BulkArchiveSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues.map(e => e.message).join(', ') }
+  }
+
+  const { linkIds } = parsed.data
+
+  try {
+    const linksCount = await db.link.count({
+      where: {
+        id: { in: linkIds },
+        userId: session.user.id,
+      },
+    })
+
+    if (linksCount !== linkIds.length) {
+      return { success: false, error: 'Some links were not found or access is forbidden.' }
+    }
+
+    await db.link.updateMany({
+      where: {
+        id: { in: linkIds },
+      },
+      data: {
+        isArchived: false,
+      },
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/archive')
+    return { success: true }
+  } catch (error) {
+    console.error('Bulk unarchive error:', error)
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function bulkTagAction(input: unknown): Promise<LinkActionResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+
+  const parsed = BulkTagSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues.map(e => e.message).join(', ') }
+  }
+
+  const { linkIds, tagIds } = parsed.data
+
+  try {
+    const linksCount = await db.link.count({
+      where: {
+        id: { in: linkIds },
+        userId: session.user.id,
+      },
+    })
+
+    if (linksCount !== linkIds.length) {
+      return { success: false, error: 'Some links were not found or access is forbidden.' }
+    }
+
+    const tagsCount = await db.tag.count({
+      where: {
+        id: { in: tagIds },
+        userId: session.user.id,
+      },
+    })
+
+    if (tagsCount !== tagIds.length) {
+      return { success: false, error: 'Some tags were not found or access is forbidden.' }
+    }
+
+    await db.$transaction(async (tx) => {
+      await tx.linkTag.deleteMany({
+        where: {
+          linkId: { in: linkIds },
+          tagId: { in: tagIds },
+        },
+      })
+
+      const relations = []
+      for (const linkId of linkIds) {
+        for (const tagId of tagIds) {
+          relations.push({ linkId, tagId })
+        }
+      }
+
+      if (relations.length > 0) {
+        await tx.linkTag.createMany({
+          data: relations,
+        })
+      }
+    })
+
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('Bulk tag error:', error)
     return { success: false, error: 'Something went wrong. Please try again.' }
   }
 }
@@ -198,6 +536,7 @@ export async function checkLinksAction(): Promise<LinkActionResponse<{ checked: 
     const { checkAllLinks } = await import('@/lib/deadLinkChecker')
     const result = await checkAllLinks()
     revalidatePath('/dashboard')
+    revalidatePath('/archive')
     return { success: true, data: result }
   } catch (error) {
     console.error('Check links action error:', error)

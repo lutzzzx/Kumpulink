@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { AddLinkModal } from '@/components/links/AddLinkModal'
 import { logoutUser } from '@/actions/auth.actions'
 import { checkLinksAction } from '@/actions/link.actions'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { useMobileUI } from '@/context/MobileUIContext'
 import styles from './DashboardHeader.module.css'
 
 export interface DashboardHeaderProps {
@@ -12,7 +14,7 @@ export interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.Element {
-  const [addModalOpen, setAddModalOpen] = useState(false)
+  const { addModalOpen, setAddModalOpen } = useMobileUI()
   const [checking, setChecking] = useState(false)
 
   const handleLogout = async () => {
@@ -34,27 +36,25 @@ export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.E
     <>
       <header className={styles.header}>
         <div className={styles.logoArea}>
-          <a href="/dashboard" className={styles.logoText}>
-            Kumpulink
+          <a href="/dashboard" className={styles.logoLink}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Kumpulink Logo" className={styles.logoImg} />
+            <span className={styles.logoText}>Kumpulink</span>
           </a>
+          <span className={styles.liveDot} title="Live Checker Active" />
         </div>
         <div className={styles.rightArea}>
-          {userName && (
-            <span className={styles.userGreeting}>
-              Hello, <strong>{userName}</strong>
-            </span>
-          )}
           <Button
             variant="ghost"
-            size="md"
+            size="sm"
             onClick={handleCheckLinks}
             disabled={checking}
             className={styles.checkBtn}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
             </svg>
-            {checking ? 'Checking...' : 'Check Status'}
+            <span className={styles.btnText}>{checking ? 'Checking...' : 'Check Status'}</span>
           </Button>
           <Button
             variant="primary"
@@ -68,6 +68,17 @@ export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.E
             </svg>
             Add Link
           </Button>
+          <ThemeToggle />
+          {userName && (
+            <div className={styles.userProfile}>
+              <div className={styles.avatar} title={`Logged in as ${userName}`}>
+                {userName.charAt(0).toUpperCase()}
+              </div>
+              <span className={styles.userName} title={userName}>
+                {userName}
+              </span>
+            </div>
+          )}
           <button
             className={styles.logoutBtn}
             onClick={handleLogout}

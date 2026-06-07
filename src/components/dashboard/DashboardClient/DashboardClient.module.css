@@ -113,3 +113,46 @@
   margin-top: var(--space-2);
   font-weight: 500;
 }
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .toolbar {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboardLayout {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+  .sidebar {
+    display: none;
+  }
+  .toolbarActions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .linksGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
+
+

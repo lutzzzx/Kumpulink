@@ -18,9 +18,12 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     redirect('/login')
   }
 
-  // Fetch user links scoped to user, selecting only needed fields
+  // Fetch user links scoped to user, selecting only needed fields, excluding archived links
   const linksRaw = await db.link.findMany({
-    where: { userId: session.user.id },
+    where: {
+      userId: session.user.id,
+      isArchived: false,
+    },
     select: {
       id: true,
       url: true,
@@ -33,6 +36,17 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       domain: {
         select: {
           name: true,
+        },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
+            },
+          },
         },
       },
     },
@@ -52,9 +66,10 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     domain: {
       name: link.domain.name,
     },
+    tags: link.tags.map(t => t.tag),
   }))
 
-  // Fetch user domains, selecting only needed fields and including link counts
+  // Fetch user domains, selecting only unarchived links for correct count
   const domainsRaw = await db.domain.findMany({
     where: { userId: session.user.id },
     select: {
@@ -62,10 +77,9 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       name: true,
       displayName: true,
       faviconUrl: true,
-      _count: {
-        select: {
-          links: true,
-        },
+      links: {
+        where: { isArchived: false },
+        select: { id: true },
       },
     },
     orderBy: { name: 'asc' },
@@ -77,14 +91,26 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     displayName: d.displayName,
     faviconUrl: d.faviconUrl,
     _count: {
-      links: d._count.links,
+      links: d.links.length,
     },
-  }))
+  })).filter(d => d._count.links > 0) // Only show domains that have active links
+
+  // Fetch all tags for this user to manage/assign
+  const tags = await db.tag.findMany({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      color: true,
+    },
+    orderBy: { name: 'asc' },
+  })
 
   return (
     <DashboardClient
       initialLinks={links}
       initialDomains={domains}
+      initialTags={tags}
     />
   )
 }

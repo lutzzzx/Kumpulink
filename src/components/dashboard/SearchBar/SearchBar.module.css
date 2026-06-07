@@ -5,7 +5,7 @@
 
 .searchIcon {
   position: absolute;
-  left: var(--space-3);
+  left: var(--space-4);
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
@@ -13,8 +13,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
+  transition: color var(--transition-base);
 }
 
 .searchInput {
-  padding-left: calc(var(--space-3) * 2.5) !important;
+  height: 48px !important;
+  padding-left: 48px !important;
+  background-color: var(--surface-input) !important;
+  border: 1.5px solid var(--border-default) !important;
+  font-size: 15px !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-base) !important;
 }
+
+.searchInput:focus {
+  background-color: var(--surface-base) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15) !important;
+}
+
+.searchWrapper:focus-within .searchIcon {
+  color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+  .searchInput {
+    font-size: 16px !important;
+  }
+}
+

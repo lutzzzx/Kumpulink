@@ -19,15 +19,33 @@ export type LinkItem = {
   domain: {
     name: string
   }
+  isArchived?: boolean
+  tags?: { id: string; name: string; color: string }[]
 }
 
 export interface LinkCardProps {
   link: LinkItem
   onEdit: (link: LinkItem) => void
   onDelete: (linkId: string) => void
+  onArchive?: (linkId: string) => void
+  onUnarchive?: (linkId: string) => void
+  isSelectable?: boolean
+  isSelected?: boolean
+  onSelect?: (id: string, checked: boolean) => void
+  onPreview?: (link: LinkItem) => void
 }
 
-export function LinkCard({ link, onEdit, onDelete }: LinkCardProps): React.JSX.Element {
+export function LinkCard({
+  link,
+  onEdit,
+  onDelete,
+  onArchive,
+  onUnarchive,
+  isSelectable = false,
+  isSelected = false,
+  onSelect,
+  onPreview,
+}: LinkCardProps): React.JSX.Element {
   const [menuOpen, setMenuOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -46,8 +64,27 @@ export function LinkCard({ link, onEdit, onDelete }: LinkCardProps): React.JSX.E
     }
   }, [menuOpen])
 
+  const cardClasses = [
+    styles.card,
+    isSelectable ? styles.cardSelectable : '',
+    isSelected ? styles.cardSelected : '',
+    menuOpen ? styles.cardMenuOpen : '',
+  ].filter(Boolean).join(' ')
+
   return (
-    <Card variant="raised" interactive className={styles.card}>
+    <Card variant="raised" interactive className={cardClasses}>
+      {isSelectable && (
+        <div className={styles.checkboxContainer}>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => onSelect?.(link.id, e.target.checked)}
+            className={styles.checkboxInput}
+            aria-label={`Select ${link.title}`}
+          />
+        </div>
+      )}
+
       <div>
         <div className={styles.header}>
           <div className={styles.favicon}>
@@ -63,7 +100,7 @@ export function LinkCard({ link, onEdit, onDelete }: LinkCardProps): React.JSX.E
                 }}
               />
             ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
               </svg>
@@ -74,6 +111,12 @@ export function LinkCard({ link, onEdit, onDelete }: LinkCardProps): React.JSX.E
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => {
+                if (onPreview) {
+                  e.preventDefault()
+                  onPreview(link)
+                }
+              }}
               className={styles.titleLink}
             >
               {link.title}
@@ -107,6 +150,37 @@ export function LinkCard({ link, onEdit, onDelete }: LinkCardProps): React.JSX.E
                   </svg>
                   Edit
                 </button>
+
+                {link.isArchived ? (
+                  <button
+                    className={`${styles.dropdownItem} ${styles.editItem}`}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onUnarchive?.(link.id)
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 11H5m14 0a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2m14 0V9a2 2 0 0 0-2-2M5 11V9a2 2 0 0 1 2-2m0 0V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 7h10"/>
+                    </svg>
+                    Unarchive
+                  </button>
+                ) : (
+                  <button
+                    className={`${styles.dropdownItem} ${styles.editItem}`}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onArchive?.(link.id)
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 8v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/>
+                      <polyline points="21 3 3 3 3 8 21 8"/>
+                      <line x1="10" y1="12" x2="14" y2="12"/>
+                    </svg>
+                    Archive
+                  </button>
+                )}
+
                 <button
                   className={`${styles.dropdownItem} ${styles.deleteItem}`}
                   onClick={() => {
@@ -127,7 +201,28 @@ export function LinkCard({ link, onEdit, onDelete }: LinkCardProps): React.JSX.E
           </div>
         </div>
         {link.description && <p className={styles.description}>{link.description}</p>}
+        
+        {/* Render tags */}
+        {link.tags && link.tags.length > 0 && (
+          <div className={styles.tagsContainer}>
+            {link.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className={styles.tagChip}
+                style={{ backgroundColor: tag.color }}
+              >
+                {tag.name}
+              </span>
+            ))}
+            {link.tags.length > 2 && (
+              <span className={styles.tagMoreBadge}>
+                {`+${link.tags.length - 2}`}
+              </span>
+            )}
+          </div>
+        )}
       </div>
+      
       <div className={styles.footer}>
         <span className={styles.domainName}>{link.domain.name}</span>
         <div className={styles.statusWrapper}>

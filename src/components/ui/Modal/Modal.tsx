@@ -53,6 +53,7 @@ export function Modal({
   return createPortal(
     <div className={styles.backdrop} onClick={handleBackdropClick}>
       <div ref={modalRef} className={modalClass} role="dialog" aria-modal="true">
+        <div className={styles.dragHandle} />
         <div className={styles.header}>
           <h2 className={styles.title}>{title}</h2>
           <button className={styles.closeButton} onClick={onClose} aria-label="Close modal">

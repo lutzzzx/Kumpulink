@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #FFF1F2 0%, #E0F2FE 50%, #EEF2F6 100%);
+  background: linear-gradient(135deg, #FFF1F2 0%, #FEF2F2 40%, #F8FAFC 100%);
   position: relative;
   overflow: hidden;
 }
@@ -19,24 +19,25 @@
   z-index: 0;
 }
 
-.circle2 {
-  position: absolute;
-  bottom: -10%;
-  right: -10%;
-  width: 60vw;
-  height: 60vw;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(37,99,237,0.06) 0%, rgba(255,255,255,0) 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
 .nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--space-4) var(--space-6);
   z-index: 10;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.logoImg {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
 }
 
 .logo {
@@ -104,15 +105,23 @@
   font-family: var(--font-headline);
   font-size: 18px;
   font-weight: 700;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .featureIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-subtle);
   color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .featureDesc {

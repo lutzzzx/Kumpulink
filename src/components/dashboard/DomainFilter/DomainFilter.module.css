@@ -7,12 +7,16 @@
 
 .title {
   font-family: var(--font-headline);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-1);
+  letter-spacing: 1px;
+  margin-bottom: var(--space-2);
+}
+
+.navList {
+  display: none;
 }
 
 .chipsList {
@@ -27,13 +31,229 @@
   opacity: 0.7;
   margin-left: 2px;
 }
+
 @media (min-width: 1025px) {
   .chipsList {
-    flex-direction: column;
-    align-items: flex-start;
+    display: none;
   }
+  
+  .navList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+  }
+
+  .navItem {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 48px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    border: none;
+    border-left: 3px solid transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    color: var(--text-secondary);
+  }
+
+  .navItem:hover {
+    background-color: var(--color-primary-light);
+    color: var(--text-primary);
+  }
+
+  .active {
+    background-color: var(--color-primary-subtle) !important;
+    border-left-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    font-weight: 600;
+  }
+
+  .navIcon {
+    margin-right: 12px;
+    color: currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .faviconWrapper {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    background-color: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-right: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .navFavicon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .navFaviconFallback {
+    font-family: var(--font-headline);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-primary);
+    background-color: var(--color-primary-subtle);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navLabel {
+    flex-grow: 1;
+    font-family: var(--font-body);
+    font-size: 14px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .navBadge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    background-color: var(--border-default);
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: var(--radius-pill);
+    min-width: 20px;
+    text-align: center;
+    transition: background-color var(--transition-base);
+  }
+
+  .active .navBadge {
+    background-color: var(--color-primary);
+    color: #FFFFFF;
+  }
+
   .filterContainer {
     position: sticky;
-    top: 100px;
+    top: 96px;
   }
 }
+
+.forceVertical .navList {
+  display: flex !important;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.forceVertical .chipsList {
+  display: none !important;
+}
+
+.forceVertical .title {
+  display: none;
+}
+
+.forceVertical .navItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  color: var(--text-secondary);
+}
+
+.forceVertical .navItem:hover {
+  background-color: var(--color-primary-light);
+  color: var(--text-primary);
+}
+
+.forceVertical .active {
+  background-color: var(--color-primary-subtle) !important;
+  border-left-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  font-weight: 600;
+}
+
+.forceVertical .navIcon {
+  margin-right: 12px;
+  color: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forceVertical .faviconWrapper {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-right: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.forceVertical .navFavicon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.forceVertical .navFaviconFallback {
+  font-family: var(--font-headline);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forceVertical .navLabel {
+  flex-grow: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.forceVertical .navBadge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  background-color: var(--border-default);
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  min-width: 20px;
+  text-align: center;
+  transition: background-color var(--transition-base);
+}
+
+.forceVertical .active .navBadge {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+

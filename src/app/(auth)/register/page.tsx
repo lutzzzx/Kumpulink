@@ -1,6 +1,5 @@
 import React from 'react'
 import { RegisterForm } from '@/components/auth/RegisterForm'
-import styles from './page.module.css'
 
 export const metadata = {
   title: 'Register - Kumpulink',
@@ -8,13 +7,5 @@ export const metadata = {
 }
 
 export default function RegisterPage(): React.JSX.Element {
-  return (
-    <div className={styles.container}>
-      <div className={styles.circle1} />
-      <div className={styles.circle2} />
-      <div className={styles.formWrapper}>
-        <RegisterForm />
-      </div>
-    </div>
-  )
+  return <RegisterForm />
 }
