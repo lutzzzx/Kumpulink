@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './layout.module.css'
 
 export default function AuthLayout({
@@ -12,8 +13,7 @@ export default function AuthLayout({
       <div className={styles.leftPanel}>
         <div className={styles.leftContent}>
           <Link href="/" className={styles.logoLink}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Kumpulink Logo" className={styles.logoImg} />
+            <Image src="/logo.png" alt="Kumpulink Logo" className={styles.logoImg} width={40} height={40} priority />
             <span className={styles.logo}>Kumpulink</span>
           </Link>
           <h1 className={styles.tagline}>

@@ -43,7 +43,7 @@
 }
 
 .tagOptionActive {
-  color: #FFFFFF !important;
+  color: var(--text-on-primary) !important;
   border-color: transparent !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -56,7 +56,7 @@
 }
 
 .tagOptionActive .colorIndicator {
-  background-color: #FFFFFF !important;
+  background-color: var(--text-on-primary) !important;
 }
 
 .emptyText {

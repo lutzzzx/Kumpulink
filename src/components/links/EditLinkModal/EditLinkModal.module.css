@@ -10,7 +10,7 @@
 }
 
 .errorAlert {
-  background-color: #FEF2F2;
+  background-color: var(--surface-error-bg);
   border: 1px solid rgba(220, 38, 38, 0.15);
   border-left: 4px solid var(--color-error);
   color: var(--color-error);

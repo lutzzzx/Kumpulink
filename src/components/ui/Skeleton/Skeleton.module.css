@@ -1,0 +1,24 @@
+.skeleton {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  background: var(--surface-chip-default);
+  background-image: linear-gradient(
+    90deg,
+    var(--surface-chip-default) 0%,
+    var(--border-default) 50%,
+    var(--surface-chip-default) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  will-change: background-position;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

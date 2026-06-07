@@ -18,40 +18,65 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     redirect('/login')
   }
 
-  // Fetch user links scoped to user, selecting only needed fields, excluding archived links
-  const linksRaw = await db.link.findMany({
-    where: {
-      userId: session.user.id,
-      isArchived: false,
-    },
-    select: {
-      id: true,
-      url: true,
-      title: true,
-      description: true,
-      faviconUrl: true,
-      isDead: true,
-      lastChecked: true,
-      httpStatus: true,
-      domain: {
-        select: {
-          name: true,
-        },
+  // Fetch user links, domains, and tags in parallel
+  const [linksRaw, domainsRaw, tags] = await Promise.all([
+    db.link.findMany({
+      where: {
+        userId: session.user.id,
+        isArchived: false,
       },
-      tags: {
-        select: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-              color: true,
+      select: {
+        id: true,
+        url: true,
+        title: true,
+        description: true,
+        faviconUrl: true,
+        isDead: true,
+        lastChecked: true,
+        httpStatus: true,
+        domain: {
+          select: {
+            name: true,
+          },
+        },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.domain.findMany({
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        faviconUrl: true,
+        links: {
+          where: { isArchived: false },
+          select: { id: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    }),
+    db.tag.findMany({
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        color: true,
+      },
+      orderBy: { name: 'asc' },
+    }),
+  ])
 
   // Format links to match LinkItem type structure
   const links: LinkItem[] = linksRaw.map(link => ({
@@ -69,22 +94,6 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     tags: link.tags.map(t => t.tag),
   }))
 
-  // Fetch user domains, selecting only unarchived links for correct count
-  const domainsRaw = await db.domain.findMany({
-    where: { userId: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      displayName: true,
-      faviconUrl: true,
-      links: {
-        where: { isArchived: false },
-        select: { id: true },
-      },
-    },
-    orderBy: { name: 'asc' },
-  })
-
   const domains: DomainFilterItem[] = domainsRaw.map(d => ({
     id: d.id,
     name: d.name,
@@ -94,17 +103,6 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       links: d.links.length,
     },
   })).filter(d => d._count.links > 0) // Only show domains that have active links
-
-  // Fetch all tags for this user to manage/assign
-  const tags = await db.tag.findMany({
-    where: { userId: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      color: true,
-    },
-    orderBy: { name: 'asc' },
-  })
 
   return (
     <DashboardClient

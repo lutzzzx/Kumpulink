@@ -105,7 +105,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #F3F4F6;
+  background-color: var(--surface-chip-default);
 }
 
 .deleteError {

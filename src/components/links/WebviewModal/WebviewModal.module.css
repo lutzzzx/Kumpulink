@@ -92,9 +92,9 @@
 }
 
 .closeBtn:hover {
-  background-color: #FEF2F2;
+  background-color: var(--surface-error-bg);
   color: var(--color-error);
-  border-color: #FCA5A5;
+  border-color: var(--color-error);
 }
 
 .divider {
@@ -134,7 +134,7 @@
 
 .webviewBody {
   flex-grow: 1;
-  background-color: #FFFFFF;
+  background-color: var(--surface-base);
   position: relative;
 }
 
@@ -142,7 +142,7 @@
   width: 100%;
   height: 100%;
   border: none;
-  background-color: #FFFFFF;
+  background-color: var(--surface-base);
 }
 
 @keyframes fadeIn {

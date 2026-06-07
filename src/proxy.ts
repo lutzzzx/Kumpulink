@@ -29,6 +29,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - google images / favicons or similar external assets
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest\\.webmanifest|manifest\\.json|logo\\.png).*)',
   ],
 }

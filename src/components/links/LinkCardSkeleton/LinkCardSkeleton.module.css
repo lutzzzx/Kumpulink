@@ -1,0 +1,6 @@
+.descriptionSkeleton {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+}

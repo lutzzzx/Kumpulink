@@ -7,14 +7,14 @@
 
 .leftPanel {
   display: none;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #BE123C 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   width: 40%;
   padding: var(--space-8) var(--space-10);
   flex-direction: column;
   justify-content: center;
   position: relative;
   overflow: hidden;
-  color: #FFFFFF;
+  color: var(--text-on-primary);
 }
 
 .leftContent {
@@ -36,7 +36,7 @@
   height: 40px;
   object-fit: contain;
   border-radius: var(--radius-md);
-  background-color: #FFFFFF;
+  background-color: var(--surface-favicon);
   padding: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
@@ -45,7 +45,7 @@
   font-family: var(--font-headline);
   font-size: 32px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--text-on-primary);
   letter-spacing: -1.2px;
 }
 

@@ -18,40 +18,56 @@ export default async function ArchivePage(): Promise<React.JSX.Element> {
     redirect('/login')
   }
 
-  // Fetch user archived links
-  const linksRaw = await db.link.findMany({
-    where: {
-      userId: session.user.id,
-      isArchived: true,
-    },
-    select: {
-      id: true,
-      url: true,
-      title: true,
-      description: true,
-      faviconUrl: true,
-      isDead: true,
-      lastChecked: true,
-      httpStatus: true,
-      domain: {
-        select: {
-          name: true,
-        },
+  // Fetch archived links and their domains in parallel
+  const [linksRaw, domainsRaw] = await Promise.all([
+    db.link.findMany({
+      where: {
+        userId: session.user.id,
+        isArchived: true,
       },
-      tags: {
-        select: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-              color: true,
+      select: {
+        id: true,
+        url: true,
+        title: true,
+        description: true,
+        faviconUrl: true,
+        isDead: true,
+        lastChecked: true,
+        httpStatus: true,
+        domain: {
+          select: {
+            name: true,
+          },
+        },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: { updatedAt: 'desc' },
-  })
+      orderBy: { updatedAt: 'desc' },
+    }),
+    db.domain.findMany({
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        faviconUrl: true,
+        links: {
+          where: { isArchived: true },
+          select: { id: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    }),
+  ])
 
   // Format links
   const links: LinkItem[] = linksRaw.map(link => ({
@@ -68,22 +84,6 @@ export default async function ArchivePage(): Promise<React.JSX.Element> {
     },
     tags: link.tags.map(t => t.tag),
   }))
-
-  // Fetch domains that contain archived links
-  const domainsRaw = await db.domain.findMany({
-    where: { userId: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      displayName: true,
-      faviconUrl: true,
-      links: {
-        where: { isArchived: true },
-        select: { id: true },
-      },
-    },
-    orderBy: { name: 'asc' },
-  })
 
   const domains: DomainFilterItem[] = domainsRaw.map(d => ({
     id: d.id,

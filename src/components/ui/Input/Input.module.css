@@ -19,24 +19,24 @@
   font-family: var(--font-body);
   font-size: 14px;
   border-radius: var(--radius-md);
-  border: 1.5px solid #D1D5DB;
-  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-default);
+  background-color: var(--surface-input);
   transition: all 150ms ease;
   outline: none;
 }
 
 .input:hover:not(:disabled) {
-  border-color: #9CA3AF;
+  border-color: var(--text-muted);
 }
 
 .input:focus:not(:disabled) {
-  border-color: var(--color-secondary);
-  box-shadow: var(--shadow-focus);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .input:disabled {
-  border-color: #E5E7EB;
-  background-color: #F3F4F6;
+  border-color: var(--border-default);
+  background-color: var(--surface-chip-default);
   color: var(--text-muted);
   cursor: not-allowed;
 }
@@ -44,7 +44,7 @@
 /* Error State */
 .errorInput {
   border-color: var(--color-error);
-  background-color: #FEF2F2;
+  background-color: var(--surface-error-bg);
 }
 
 .errorInput:focus:not(:disabled) {

@@ -22,7 +22,7 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-md);
-  background-color: #FFFFFF;
+  background-color: var(--surface-favicon);
   border: 1px solid var(--border-default);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
@@ -89,7 +89,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #FFFFFF;
+  background-color: var(--surface-raised);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
@@ -132,7 +132,7 @@
   color: var(--color-error);
 }
 .deleteItem:hover {
-  background-color: #FEF2F2;
+  background-color: var(--surface-error-bg);
 }
 
 .description {
@@ -216,26 +216,12 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  color: #FFFFFF;
+  color: var(--text-on-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-[data-theme="dark"] .dropdown {
-  background-color: var(--surface-raised);
-}
-[data-theme="dark"] .editItem {
-  color: var(--text-primary);
-}
-[data-theme="dark"] .editItem:hover {
-  background-color: var(--surface-base);
-}
-[data-theme="dark"] .deleteItem {
-  color: #FCA5A5;
-}
-[data-theme="dark"] .deleteItem:hover {
-  background-color: rgba(239, 68, 68, 0.2);
-}
+/* Redundant overrides removed, colors are now handled by design system tokens */
 
 .tagMoreBadge {
   display: none;

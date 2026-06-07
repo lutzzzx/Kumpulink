@@ -7,6 +7,8 @@ import { logoutUser } from '@/actions/auth.actions'
 import { checkLinksAction } from '@/actions/link.actions'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useMobileUI } from '@/context/MobileUIContext'
+import Image from 'next/image'
+import { Modal } from '@/components/ui/Modal'
 import styles from './DashboardHeader.module.css'
 
 export interface DashboardHeaderProps {
@@ -16,8 +18,14 @@ export interface DashboardHeaderProps {
 export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.Element {
   const { addModalOpen, setAddModalOpen } = useMobileUI()
   const [checking, setChecking] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true)
+  }
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutConfirm(false)
     await logoutUser()
   }
 
@@ -37,8 +45,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.E
       <header className={styles.header}>
         <div className={styles.logoArea}>
           <a href="/dashboard" className={styles.logoLink}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Kumpulink Logo" className={styles.logoImg} />
+            <Image src="/logo.png" alt="Kumpulink Logo" className={styles.logoImg} width={32} height={32} priority />
             <span className={styles.logoText}>Kumpulink</span>
           </a>
           <span className={styles.liveDot} title="Live Checker Active" />
@@ -81,7 +88,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.E
           )}
           <button
             className={styles.logoutBtn}
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             title="Sign Out"
             aria-label="Sign Out"
           >
@@ -95,6 +102,32 @@ export function DashboardHeader({ userName }: DashboardHeaderProps): React.JSX.E
       </header>
 
       <AddLinkModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} />
+
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Sign Out"
+      >
+        <div className={styles.confirmText}>
+          Are you sure you want to sign out of Kumpulink?
+        </div>
+        <div className={styles.confirmActions}>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => setShowLogoutConfirm(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleLogoutConfirm}
+          >
+            Sign Out
+          </Button>
+        </div>
+      </Modal>
     </>
   )
 }
