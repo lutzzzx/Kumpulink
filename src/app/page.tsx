@@ -1,65 +1,102 @@
-import Image from "next/image";
+import React from 'react'
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import styles from './page.module.css'
 
-export default function Home() {
+export const metadata = {
+  title: 'Kumpulink - Self-Hosted Bookmarking App',
+  description: 'A personal bookmarking app with automatic domain grouping and dead link checks.',
+}
+
+export default async function LandingPage(): Promise<React.JSX.Element> {
+  const session = await auth()
+
+  if (session?.user) {
+    redirect('/dashboard')
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className={styles.container}>
+      <div className={styles.circle1} />
+      <div className={styles.circle2} />
+
+      <nav className={styles.nav}>
+        <span className={styles.logo}>Kumpulink</span>
+        <div className={styles.navLinks}>
+          <Link href="/login" passHref className={styles.linkWrapper}>
+            <Button variant="ghost" size="sm">Sign In</Button>
+          </Link>
+          <Link href="/register" passHref className={styles.linkWrapper}>
+            <Button variant="primary" size="sm">Get Started</Button>
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </nav>
+
+      <main className={styles.hero}>
+        <h1 className={`${styles.title} text-hero`}>
+          Your Bookmarks, <br />
+          <span className={styles.accent}>Automated.</span>
+        </h1>
+        <p className={styles.subtitle}>
+          Save links with zero effort. They get grouped by domain automatically, and we verify their health periodically.
+        </p>
+
+        <div className={styles.ctaButtons}>
+          <Link href="/register" passHref className={styles.linkWrapper}>
+            <Button variant="primary" size="lg">Create Free Account</Button>
+          </Link>
+          <Link href="/login" passHref className={styles.linkWrapper}>
+            <Button variant="secondary" size="lg">Sign In</Button>
+          </Link>
+        </div>
+
+        <div className={styles.featuresGrid}>
+          <Card variant="glass" className={styles.featureCard}>
+            <h3 className={styles.featureTitle}>
+              <span className={styles.featureIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+              </span>
+              Frictionless Saving
+            </h3>
+            <p className={styles.featureDesc}>
+              Just paste a URL. We scrape the page titles and resolve favicons automatically on our server.
+            </p>
+          </Card>
+
+          <Card variant="glass" className={styles.featureCard}>
+            <h3 className={styles.featureTitle}>
+              <span className={styles.featureIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </span>
+              Auto Grouping
+            </h3>
+            <p className={styles.featureDesc}>
+              No manual categorization needed. Links are grouped by domain name automatically.
+            </p>
+          </Card>
+
+          <Card variant="glass" className={styles.featureCard}>
+            <h3 className={styles.featureTitle}>
+              <span className={styles.featureIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+              </span>
+              Dead Link Checker
+            </h3>
+            <p className={styles.featureDesc}>
+              Our background cron job periodically pings your links and flags broken ones visually.
+            </p>
+          </Card>
         </div>
       </main>
     </div>
-  );
+  )
 }

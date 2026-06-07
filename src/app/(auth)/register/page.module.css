@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FFF1F2 0%, #E0F2FE 50%, #EEF2F6 100%);
+  padding: var(--space-4);
+  position: relative;
+  overflow: hidden;
+}
+
+.circle1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(225,29,72,0.1) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.circle2 {
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,237,0.08) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  z-index: 10;
+}

@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String?
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  links        Link[]
+  domains      Domain[]
+
+  @@map("users")
+}
+
+model Domain {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  name        String   // e.g. "github.com"
+  displayName String   @map("display_name") // e.g. "GitHub"
+  faviconUrl  String?  @map("favicon_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  links       Link[]
+
+  @@unique([userId, name])
+  @@map("domains")
+}
+
+model Link {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  domainId    String    @map("domain_id")
+  url         String
+  title       String
+  description String?   @db.Text
+  faviconUrl  String?   @map("favicon_url")
+  isDead      Boolean   @default(false) @map("is_dead")
+  lastChecked DateTime? @map("last_checked")
+  httpStatus  Int?      @map("http_status")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain      Domain    @relation(fields: [domainId], references: [id])
+
+  @@index([userId])
+  @@index([domainId])
+  @@map("links")
+}

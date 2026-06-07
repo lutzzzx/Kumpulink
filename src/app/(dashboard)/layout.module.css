@@ -1,0 +1,10 @@
+.layoutWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentWrapper {
+  flex-grow: 1;
+  background-color: var(--surface-background);
+}
