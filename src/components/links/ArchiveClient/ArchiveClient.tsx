@@ -33,6 +33,22 @@ export function ArchiveClient({
   const [isPending, startTransition] = useTransition()
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
+  // Custom confirmation/alert modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    confirmVariant?: 'primary' | 'destructive' | 'ghost'
+    showCancel?: boolean
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
+
   // Bulk select states
   const [isBulkMode, setIsBulkMode] = useState(false)
   const [selectedLinkIds, setSelectedLinkIds] = useState<string[]>([])
@@ -115,32 +131,64 @@ export function ArchiveClient({
 
   const handleBulkUnarchive = () => {
     if (selectedLinkIds.length === 0) return
-    if (window.confirm(`Are you sure you want to unarchive ${selectedLinkIds.length} bookmarks?`)) {
-      startTransition(async () => {
-        const res = await bulkUnarchiveAction({ linkIds: selectedLinkIds })
-        if (res.success) {
-          setSelectedLinkIds([])
-          setIsBulkMode(false)
-        } else {
-          alert(res.error || 'Failed to unarchive links.')
-        }
-      })
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Unarchive Bookmarks',
+      message: `Are you sure you want to unarchive ${selectedLinkIds.length} bookmarks?`,
+      confirmText: 'Unarchive',
+      confirmVariant: 'primary',
+      showCancel: true,
+      onConfirm: () => {
+        startTransition(async () => {
+          const res = await bulkUnarchiveAction({ linkIds: selectedLinkIds })
+          if (res.success) {
+            setSelectedLinkIds([])
+            setIsBulkMode(false)
+          } else {
+            setConfirmModal({
+              isOpen: true,
+              title: 'Error',
+              message: res.error || 'Failed to unarchive links.',
+              confirmText: 'OK',
+              confirmVariant: 'primary',
+              showCancel: false,
+              onConfirm: () => {},
+            })
+          }
+        })
+      }
+    })
   }
 
   const handleBulkDelete = () => {
     if (selectedLinkIds.length === 0) return
-    if (window.confirm(`Are you sure you want to permanently delete ${selectedLinkIds.length} bookmarks? This cannot be undone.`)) {
-      startTransition(async () => {
-        const res = await bulkDeleteAction({ linkIds: selectedLinkIds })
-        if (res.success) {
-          setSelectedLinkIds([])
-          setIsBulkMode(false)
-        } else {
-          alert(res.error || 'Failed to delete links.')
-        }
-      })
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Permanently Delete Bookmarks',
+      message: `Are you sure you want to permanently delete ${selectedLinkIds.length} bookmarks? This cannot be undone.`,
+      confirmText: 'Delete',
+      confirmVariant: 'destructive',
+      showCancel: true,
+      onConfirm: () => {
+        startTransition(async () => {
+          const res = await bulkDeleteAction({ linkIds: selectedLinkIds })
+          if (res.success) {
+            setSelectedLinkIds([])
+            setIsBulkMode(false)
+          } else {
+            setConfirmModal({
+              isOpen: true,
+              title: 'Error',
+              message: res.error || 'Failed to delete links.',
+              confirmText: 'OK',
+              confirmVariant: 'primary',
+              showCancel: false,
+              onConfirm: () => {},
+            })
+          }
+        })
+      }
+    })
   }
 
   const toggleBulkMode = () => {
@@ -325,6 +373,39 @@ export function ArchiveClient({
           title={previewLink.title}
         />
       )}
+      {/* Generic Confirmation / Alert Modal */}
+      <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        title={confirmModal.title}
+      >
+        <div className={styles.deleteConfirmText}>
+          {confirmModal.message}
+        </div>
+        <div className={styles.deleteActions}>
+          {confirmModal.showCancel !== false && (
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button
+            variant={confirmModal.confirmVariant || 'primary'}
+            size="md"
+            onClick={() => {
+              confirmModal.onConfirm()
+              setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            }}
+            disabled={isPending}
+          >
+            {confirmModal.confirmText || 'Confirm'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

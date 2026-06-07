@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createTagAction, updateTagAction, deleteTagAction, getUserTagsAction } from '@/actions/tag.actions'
 import { type TagItem } from '../TagPicker'
+import { Modal } from '@/components/ui/Modal'
 import styles from './TagManager.module.css'
 
 const PRESET_COLORS = [
@@ -30,6 +31,22 @@ export function TagManager({ tags: initialTags }: TagManagerProps): React.JSX.El
   
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // Custom confirmation/alert modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    confirmVariant?: 'primary' | 'destructive' | 'ghost'
+    showCancel?: boolean
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
 
   const [tags, setTags] = useState<TagItem[]>(initialTags || [])
 
@@ -102,19 +119,27 @@ export function TagManager({ tags: initialTags }: TagManagerProps): React.JSX.El
 
   const handleDelete = (tagId: string) => {
     setErrorMsg(null)
-    if (window.confirm('Are you sure you want to delete this tag? It will be removed from all bookmarks.')) {
-      startTransition(async () => {
-        const res = await deleteTagAction(tagId)
-        if (!res.success) {
-          setErrorMsg(res.error || 'Failed to delete tag.')
-        } else {
-          if (editingTag?.id === tagId) {
-            handleCancelEdit()
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Tag',
+      message: 'Are you sure you want to delete this tag? It will be removed from all bookmarks.',
+      confirmText: 'Delete',
+      confirmVariant: 'destructive',
+      showCancel: true,
+      onConfirm: () => {
+        startTransition(async () => {
+          const res = await deleteTagAction(tagId)
+          if (!res.success) {
+            setErrorMsg(res.error || 'Failed to delete tag.')
+          } else {
+            if (editingTag?.id === tagId) {
+              handleCancelEdit()
+            }
+            await refreshTags()
           }
-          await refreshTags()
-        }
-      })
-    }
+        })
+      }
+    })
   }
 
   return (
@@ -219,6 +244,39 @@ export function TagManager({ tags: initialTags }: TagManagerProps): React.JSX.El
           ))
         )}
       </div>
+      {/* Generic Confirmation / Alert Modal */}
+      <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        title={confirmModal.title}
+      >
+        <div className={styles.deleteConfirmText || 'text-body'}>
+          {confirmModal.message}
+        </div>
+        <div className={styles.deleteActions || 'deleteActions'}>
+          {confirmModal.showCancel !== false && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button
+            variant={confirmModal.confirmVariant || 'primary'}
+            size="sm"
+            onClick={() => {
+              confirmModal.onConfirm()
+              setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            }}
+            disabled={isPending}
+          >
+            {confirmModal.confirmText || 'Confirm'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }
