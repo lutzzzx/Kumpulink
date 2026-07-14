@@ -31,6 +31,7 @@ export function DashboardClient({
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null)
   
   // Modals state
+  const [collapsedDomains, setCollapsedDomains] = useState<Record<string, boolean>>({})
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null)
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null)
   const [previewLink, setPreviewLink] = useState<LinkItem | null>(null)
@@ -201,6 +202,13 @@ export function DashboardClient({
     setSelectedLinkIds([])
   }
 
+  const toggleDomainCollapse = (domainKey: string) => {
+    setCollapsedDomains(prev => ({
+      ...prev,
+      [domainKey]: !prev[domainKey]
+    }))
+  }
+
   return (
     <div className={styles.dashboardLayout}>
       {/* Sidebar Filter */}
@@ -259,32 +267,57 @@ export function DashboardClient({
             const group = groupedLinks[domainKey]
             return (
               <section key={domainKey} className={styles.domainSection}>
-                <div className={styles.domainHeader}>
-                  {group.domain.faviconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={group.domain.faviconUrl}
-                      alt=""
-                      className={styles.domainFavicon}
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${domainKey}&sz=64`
-                      }}
-                    />
-                  ) : (
-                    <div className={`${styles.domainFavicon} ${styles.faviconPlaceholder}`}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/>
-                      </svg>
-                    </div>
-                  )}
-                  <h2 className={styles.domainTitle}>
-                    {group.domain.displayName}{' '}
-                    <span className={styles.domainCount}>
-                      ({group.links.length})
-                    </span>
-                  </h2>
+                <div 
+                  className={styles.domainHeader}
+                  onClick={() => toggleDomainCollapse(domainKey)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      toggleDomainCollapse(domainKey)
+                    }
+                  }}
+                >
+                  <div className={styles.domainHeaderLeft}>
+                    {group.domain.faviconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={group.domain.faviconUrl}
+                        alt=""
+                        className={styles.domainFavicon}
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${domainKey}&sz=64`
+                        }}
+                      />
+                    ) : (
+                      <div className={`${styles.domainFavicon} ${styles.faviconPlaceholder}`}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                      </div>
+                    )}
+                    <h2 className={styles.domainTitle}>
+                      {group.domain.displayName}{' '}
+                      <span className={styles.domainCount}>
+                        ({group.links.length})
+                      </span>
+                    </h2>
+                  </div>
+                  <svg 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                    className={`${styles.domainCollapseIcon} ${collapsedDomains[domainKey] ? styles.collapsed : ''}`}
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
                 </div>
-                <div className={styles.linksGrid}>
+                {!collapsedDomains[domainKey] && (
+                  <div className={styles.linksGrid}>
                   {group.links.map((link) => (
                     <LinkCard
                       key={link.id}
@@ -298,7 +331,8 @@ export function DashboardClient({
                       onPreview={setPreviewLink}
                     />
                   ))}
-                </div>
+                  </div>
+                )}
               </section>
             )
           })

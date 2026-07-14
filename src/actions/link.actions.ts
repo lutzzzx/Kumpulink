@@ -33,6 +33,18 @@ export async function createLinkAction(input: unknown): Promise<LinkActionRespon
   }
 
   try {
+    // Prevent exact duplicate link for the user
+    const existingLink = await db.link.findFirst({
+      where: {
+        url,
+        userId: session.user.id,
+      },
+    })
+    
+    if (existingLink) {
+      return { success: false, error: 'This exact link has already been saved.' }
+    }
+
     // Verify tags ownership
     if (tagIds && tagIds.length > 0) {
       const tagsCount = await db.tag.count({
