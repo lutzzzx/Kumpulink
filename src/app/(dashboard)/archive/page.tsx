@@ -18,57 +18,55 @@ export default async function ArchivePage(): Promise<React.JSX.Element> {
     redirect('/login')
   }
 
-  // Fetch archived links and their domains in parallel
-  const [linksRaw, domainsRaw] = await Promise.all([
-    db.link.findMany({
-      where: {
-        userId: session.user.id,
-        isArchived: true,
-      },
-      select: {
-        id: true,
-        url: true,
-        title: true,
-        description: true,
-        faviconUrl: true,
-        isDead: true,
-        isArchived: true,
-        lastChecked: true,
-        httpStatus: true,
-        domain: {
-          select: {
-            name: true,
-          },
+  const linksRaw = await db.link.findMany({
+    where: {
+      userId: session.user.id,
+      isArchived: true,
+    },
+    select: {
+      id: true,
+      url: true,
+      title: true,
+      description: true,
+      faviconUrl: true,
+      isDead: true,
+      isArchived: true,
+      lastChecked: true,
+      httpStatus: true,
+      domain: {
+        select: {
+          name: true,
         },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                color: true,
-              },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
             },
           },
         },
       },
-      orderBy: { updatedAt: 'desc' },
-    }),
-    db.domain.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        displayName: true,
-        faviconUrl: true,
-        links: {
-          where: { isArchived: true },
-          select: { id: true },
-        },
+    },
+    orderBy: { updatedAt: 'desc' },
+  })
+
+  const domainsRaw = await db.domain.findMany({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      faviconUrl: true,
+      links: {
+        where: { isArchived: true },
+        select: { id: true },
       },
-      orderBy: { name: 'asc' },
-    }),
-  ])
+    },
+    orderBy: { name: 'asc' },
+  })
 
   // Format links
   const links: LinkItem[] = linksRaw.map(link => ({

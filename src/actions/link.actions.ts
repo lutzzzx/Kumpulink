@@ -137,13 +137,13 @@ export async function updateLinkAction(input: unknown): Promise<LinkActionRespon
     return { success: false, error: errorMsg }
   }
 
-  const { id: linkId, title, description, tagIds } = parsed.data
+  const { id: linkId, url, title, description, tagIds } = parsed.data
 
   try {
     // 1. Verify ownership pattern
     const link = await db.link.findUnique({
       where: { id: linkId },
-      select: { userId: true },
+      select: { userId: true, url: true, domainId: true },
     })
 
     if (!link) {
@@ -169,13 +169,77 @@ export async function updateLinkAction(input: unknown): Promise<LinkActionRespon
 
     // 2. Perform edit mutation inside a transaction
     const updated = await db.$transaction(async (tx) => {
+      let currentDomainId = link.domainId
+      let faviconUrl = undefined
+      const isUrlChanged = url !== link.url
+
+      if (isUrlChanged) {
+        // Prevent exact duplicate link for the user
+        const existingLink = await tx.link.findFirst({
+          where: {
+            url,
+            userId: session.user!.id!,
+          },
+        })
+        if (existingLink) {
+          throw new Error('This exact link has already been saved.')
+        }
+
+        const domainName = extractDomain(url)
+        if (!domainName) {
+          throw new Error('Could not extract valid domain from URL.')
+        }
+
+        faviconUrl = `https://www.google.com/s2/favicons?domain=${domainName}&sz=64`
+
+        let domain = await tx.domain.findUnique({
+          where: {
+            userId_name: {
+              userId: session.user!.id!,
+              name: domainName,
+            },
+          },
+        })
+
+        if (!domain) {
+          const displayName = domainName.split('.')[0]
+          const capitalized = displayName.charAt(0).toUpperCase() + displayName.slice(1)
+          domain = await tx.domain.create({
+            data: {
+              userId: session.user!.id!,
+              name: domainName,
+              displayName: capitalized,
+              faviconUrl,
+            },
+          })
+        }
+        currentDomainId = domain.id
+      }
+
       const updatedLink = await tx.link.update({
         where: { id: linkId },
         data: {
+          url,
           title,
           description: description || null,
+          ...(isUrlChanged ? { domainId: currentDomainId, faviconUrl, isDead: false, httpStatus: null, lastChecked: null } : {})
         },
       })
+
+      // Clean up orphaned domain if changed
+      if (isUrlChanged && link.domainId !== currentDomainId) {
+        const remainingCount = await tx.link.count({
+          where: {
+            domainId: link.domainId,
+            userId: session.user!.id!,
+          },
+        })
+        if (remainingCount === 0) {
+          await tx.domain.delete({
+            where: { id: link.domainId },
+          })
+        }
+      }
 
       if (tagIds !== undefined) {
         // Delete existing relations
@@ -200,9 +264,29 @@ export async function updateLinkAction(input: unknown): Promise<LinkActionRespon
     revalidatePath('/dashboard')
     revalidatePath('/archive')
     return { success: true, data: updated }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Update link error:', error)
-    return { success: false, error: 'Something went wrong. Please try again.' }
+    const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+    return { success: false, error: message }
+  }
+}
+
+export async function scrapeTitleAction(url: string): Promise<LinkActionResponse<{ title: string }>> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthenticated' }
+  }
+  
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+    return { success: false, error: 'Invalid URL' }
+  }
+
+  try {
+    const title = await scrapeTitle(url)
+    return { success: true, data: { title } }
+  } catch (error) {
+    console.error('Scrape title error:', error)
+    return { success: false, error: 'Failed to scrape title' }
   }
 }
 

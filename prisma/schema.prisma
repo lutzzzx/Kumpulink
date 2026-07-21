@@ -1,11 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model User {
@@ -15,9 +15,8 @@ model User {
   passwordHash String   @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
-
-  links        Link[]
   domains      Domain[]
+  links        Link[]
   tags         Tag[]
 
   @@map("users")
@@ -26,11 +25,10 @@ model User {
 model Domain {
   id          String   @id @default(cuid())
   userId      String   @map("user_id")
-  name        String   // e.g. "github.com"
-  displayName String   @map("display_name") // e.g. "GitHub"
+  name        String
+  displayName String   @map("display_name")
   faviconUrl  String?  @map("favicon_url")
   createdAt   DateTime @default(now()) @map("created_at")
-
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   links       Link[]
 
@@ -39,23 +37,25 @@ model Domain {
 }
 
 model Link {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  domainId    String    @map("domain_id")
-  url         String
-  title       String
-  description String?   @db.Text
-  faviconUrl  String?   @map("favicon_url")
-  isDead      Boolean   @default(false) @map("is_dead")
-  isArchived  Boolean   @default(false) @map("is_archived")
-  lastChecked DateTime? @map("last_checked")
-  httpStatus  Int?      @map("http_status")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  domain      Domain    @relation(fields: [domainId], references: [id])
-  tags        LinkTag[]
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  domainId        String    @map("domain_id")
+  url             String
+  title           String
+  description     String?
+  faviconUrl      String?   @map("favicon_url")
+  isDead          Boolean   @default(false) @map("is_dead")
+  lastChecked     DateTime? @map("last_checked")
+  httpStatus      Int?      @map("http_status")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  isArchived      Boolean   @default(false) @map("is_archived")
+  redirect_status Int?
+  redirect_url    String?
+  url_updated_at  DateTime?
+  tags            LinkTag[]
+  domain          Domain    @relation(fields: [domainId], references: [id])
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([domainId])
@@ -66,11 +66,10 @@ model Tag {
   id        String    @id @default(cuid())
   userId    String    @map("user_id")
   name      String    @db.VarChar(50)
-  color     String    @db.VarChar(7)   // hex color e.g. "#E11D48"
-  createdAt DateTime  @default(now())  @map("created_at")
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  color     String    @db.VarChar(7)
+  createdAt DateTime  @default(now()) @map("created_at")
   links     LinkTag[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, name])
   @@index([userId])
@@ -81,7 +80,6 @@ model LinkTag {
   linkId     String   @map("link_id")
   tagId      String   @map("tag_id")
   assignedAt DateTime @default(now()) @map("assigned_at")
-
   link       Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
   tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 

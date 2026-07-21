@@ -123,8 +123,8 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
                       <div key={i} className={styles.mockCard}>
                         <div className={styles.mockCardIcon} />
                         <div className={styles.mockCardLines}>
-                          <div className={styles.mockCardLine1} style={{ width: `${Math.floor(Math.random() * 40) + 40}%`}} />
-                          <div className={styles.mockCardLine2} style={{ width: `${Math.floor(Math.random() * 30) + 30}%`}} />
+                          <div className={styles.mockCardLine1} style={{ width: `${40 + ((i * 15) % 40)}%`}} />
+                          <div className={styles.mockCardLine2} style={{ width: `${30 + ((i * 10) % 30)}%`}} />
                         </div>
                       </div>
                     ))}
@@ -141,7 +141,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
         {/* Detailed Features */}
         <section className={styles.featuresSection} id="features">
           <div className={styles.sectionHeader}>
-            <h2 className={`text-h2 ${styles.sectionTitle}`}>Everything you need, nothing you don't.</h2>
+            <h2 className={`text-h2 ${styles.sectionTitle}`}>Everything you need, nothing you don&apos;t.</h2>
             <p className={styles.sectionSubtitle}>Built to solve the problem of digital hoarding. It just works.</p>
           </div>
 
@@ -154,7 +154,7 @@ export default async function LandingPage(): Promise<React.JSX.Element> {
               </div>
               <h3 className={styles.featureTitle}>Frictionless Saving</h3>
               <p className={styles.featureDesc}>
-                Paste a URL and you're done. We automatically scrape the page title, description, and high-resolution favicon for you.
+                Paste a URL and you&apos;re done. We automatically scrape the page title, description, and high-resolution favicon for you.
               </p>
             </Card>
 

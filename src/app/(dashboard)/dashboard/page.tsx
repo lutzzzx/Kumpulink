@@ -18,66 +18,65 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     redirect('/login')
   }
 
-  // Fetch user links, domains, and tags in parallel
-  const [linksRaw, domainsRaw, tags] = await Promise.all([
-    db.link.findMany({
-      where: {
-        userId: session.user.id,
-        isArchived: false,
-      },
-      select: {
-        id: true,
-        url: true,
-        title: true,
-        description: true,
-        faviconUrl: true,
-        isDead: true,
-        isArchived: true,
-        lastChecked: true,
-        httpStatus: true,
-        domain: {
-          select: {
-            name: true,
-          },
+  const linksRaw = await db.link.findMany({
+    where: {
+      userId: session.user.id,
+      isArchived: false,
+    },
+    select: {
+      id: true,
+      url: true,
+      title: true,
+      description: true,
+      faviconUrl: true,
+      isDead: true,
+      isArchived: true,
+      lastChecked: true,
+      httpStatus: true,
+      domain: {
+        select: {
+          name: true,
         },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                color: true,
-              },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
             },
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
-    }),
-    db.domain.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        displayName: true,
-        faviconUrl: true,
-        links: {
-          where: { isArchived: false },
-          select: { id: true },
-        },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const domainsRaw = await db.domain.findMany({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      faviconUrl: true,
+      links: {
+        where: { isArchived: false },
+        select: { id: true },
       },
-      orderBy: { name: 'asc' },
-    }),
-    db.tag.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        color: true,
-      },
-      orderBy: { name: 'asc' },
-    }),
-  ])
+    },
+    orderBy: { name: 'asc' },
+  })
+
+  const tags = await db.tag.findMany({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      color: true,
+    },
+    orderBy: { name: 'asc' },
+  })
 
   // Format links to match LinkItem type structure
   const links: LinkItem[] = linksRaw.map(link => ({

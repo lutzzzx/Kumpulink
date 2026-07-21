@@ -39,3 +39,37 @@
   font-weight: 600;
   color: var(--text-secondary);
 }
+
+.titleRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.titleRow > div:first-child {
+  flex: 1;
+}
+
+.scrapeBtn {
+  height: 40px; /* Standard input height */
+  width: 40px; /* Match width for a square button */
+  min-width: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
